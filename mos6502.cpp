@@ -349,7 +349,14 @@ void MOS6502::op_BPL(uint8_t *operand)
 
 void MOS6502::op_BRK(uint8_t *operand)
 {
-
+    reg_PC++;
+    memory[reg_SP--] = reg_PC & HIGH_BYTE;
+    memory[reg_SP--] = reg_PC & LOW_BYTE;
+    reg_status.B = 1;
+    uint8_t status_byte = get_status();
+    memory[reg_SP--] = status_byte;
+    reg_status.I = 1;
+    reg_PC = (memory[IRQ_HIGH] << 8) | memory[IRQ_LOW];
 }
 
 void MOS6502::op_BVC(uint8_t *operand)

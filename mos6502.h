@@ -6,9 +6,11 @@
 using namespace std;
 
 #define MEMORY_SIZE 0x10000
-#define RESET_LOW 0xFFFC // RESET vector low byte
-#define RESET_HIGH 0xFFFD // RESET vector high byte
-#define SP_START 0x1FD // Stack Pointer start address
+#define RESET_LOW 0xFFFC     // RESET vector low byte
+#define RESET_HIGH 0xFFFD    // RESET vector high byte
+#define IRQ_LOW 0xFFFE       // IRQ vector low byte
+#define IRQ_HIGH 0xFFFF      // IRQ vector high byte
+#define SP_START 0x1FD       // Stack Pointer start address
 
 #define LOW_BYTE 0xFF
 #define HIGH_BYTE 0xFF
