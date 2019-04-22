@@ -7,6 +7,12 @@ MOS6502::MOS6502()
     initialize();
 }
 
+MOS6502::MOS6502(string filename)
+{
+    initialize();
+    load(filename);
+}
+
 MOS6502::MOS6502(string filename, uint16_t location)
 {
     initialize();
@@ -21,11 +27,36 @@ void MOS6502::initialize()
     reset();
 }
 
-void MOS6502::load(string filename, uint16_t location)
+bool MOS6502::load(string filename)
 {
-    FILE * rom = fopen(filename, "r");
-    fread(&memory[location], 1, (size_t)(MEMORY_SIZE - location), rom);
-    fclose(rom);
+    FILE * rom = fopen(filename.c_str(), "rb");
+    if(rom != NULL)
+    {
+        fread(&memory[reg_PC], 1, (size_t)(MEMORY_SIZE - reg_PC), rom);
+        fclose(rom);
+        return true;
+    }
+    else
+    {
+        cout << "Unable to open file " << filename << endl;
+        return false;
+    }
+}
+
+bool MOS6502::load(string filename, uint16_t location)
+{
+    FILE * rom = fopen(filename.c_str(), "rb");
+    if(rom != NULL)
+    {
+        fread(&memory[location], 1, (size_t)(MEMORY_SIZE - location), rom);
+        fclose(rom);
+        return true;
+    }
+    else
+    {
+        cout << "Unable to open file " << filename << endl;
+        return false;
+    }
 }
 
 void MOS6502::reset()
@@ -58,19 +89,23 @@ uint8_t MOS6502::fetch()
     return memory[reg_PC++];
 }
 
-Instruction MOS6502::decode(uint8_t byte)
+MOS6502::Instruction MOS6502::decode(uint8_t byte)
 {
-    return decoder[byte];
+    Instruction instr = decoder[byte];
+    return instr;
 }
 
 void MOS6502::execute(Instruction instr)
 {
-    uint16_t = operand = operand_from_mode(instr.addr_mode);
-    instr.op_func(operand);
+    uint8_t * operand = operand_from_mode(instr.addr_mode);
+    op_ptr operation = instr.op_func;
+    (this->*operation)(operand);
 }
 
 uint8_t * MOS6502::operand_from_mode(Mode m)
 {
+    uint16_t addr_location;
+    uint16_t addr;
     uint8_t * operand;
 
     switch(m)
@@ -84,32 +119,32 @@ uint8_t * MOS6502::operand_from_mode(Mode m)
             break;
 
         case ABS:
-            uint16_t addr = (memory[reg_PC++] | memory[reg_PC++] << 8);
+            addr = (memory[reg_PC++] | memory[reg_PC++] << 8);
             operand = &memory[addr];
             break;
 
         case ZPG:
-            uint16_t addr = memory[reg_PC++];
+            addr = memory[reg_PC++];
             operand = &memory[addr];
             break;
 
         case ZPX:
-            uint16_t addr = memory[reg_PC++] + reg_X;
+            addr = memory[reg_PC++] + reg_X;
             operand = &memory[addr];
             break;
 
         case ZPY:
-            uint16_t addr = memory[reg_PC++] + reg_Y;
+            addr = memory[reg_PC++] + reg_Y;
             operand = &memory[addr];
             break;
 
         case AIX:
-            uint16_t addr = (memory[reg_PC++] | memory[reg_PC++] << 8) + reg_X;
+            addr = (memory[reg_PC++] | memory[reg_PC++] << 8) + reg_X;
             operand = &memory[addr];
             break;
 
         case AIY:
-            uint16_t addr = (memory[reg_PC++] | memory[reg_PC++] << 8) + reg_Y;
+            addr = (memory[reg_PC++] | memory[reg_PC++] << 8) + reg_Y;
             operand = &memory[addr];
             break;
 
@@ -122,21 +157,21 @@ uint8_t * MOS6502::operand_from_mode(Mode m)
             break;
 
         case IIX:
-            uint16_t addr_location = memory[reg_PC++] + reg_X;
-            uint16_t addr = (memory[addr_location] | memory[addr_location + 1] << 8);
+            addr_location = memory[reg_PC++] + reg_X;
+            addr = (memory[addr_location] | memory[addr_location + 1] << 8);
             operand = &memory[addr];
             break;
 
         case IIY:
-            uint16_t addr_location = memory[pc++];
-            uint16_t addr = (memory[addr_location] | memory[addr_location + 1] << 8) + reg_Y;
+            addr_location = memory[reg_PC++];
+            addr = (memory[addr_location] | memory[addr_location + 1] << 8) + reg_Y;
             operand = &memory[addr];
             break;
 
         case IND:
-            uint16_t addr_location = (memory[reg_PC++] | memory[reg_PC++] << 8);
-            uint16_t addr = (memory[addr_location] | memory[addr_location + 1] << 8)
-            operand = &memory[addr]
+            addr_location = (memory[reg_PC++] | memory[reg_PC++] << 8);
+            addr = (memory[addr_location] | memory[addr_location + 1] << 8);
+            operand = &memory[addr];
             break;
     }
 
@@ -228,7 +263,7 @@ void MOS6502::set_status(uint8_t status_byte)
     reg_status.C = status_byte & 0x1;
 }
 
-void MOS6502::op_ADC(uint16_t *operand)
+void MOS6502::op_ADC(uint8_t *operand)
 {
     uint8_t memory_val = *operand;
     uint16_t result = reg_A + memory_val + reg_status.C;
@@ -473,7 +508,7 @@ void MOS6502::op_EOR(uint8_t *operand)
 
 void MOS6502::op_INC(uint8_t *operand)
 {
-    memory_val = *operand++;
+    uint8_t memory_val = *operand++;
     reg_status.N = memory_val & BYTE_HIGH_BIT;
     reg_status.Z = (memory_val == 0);
 }
