@@ -1,4 +1,5 @@
 #include <iostream>
+#include <sstream>
 #include <iomanip>
 #include <string>
 #include <stdio.h>
@@ -75,6 +76,8 @@ private:
     void execute(Instruction instr);
 
     uint8_t * operand_from_mode(Mode m);
+
+    string to_hex_string(uint16_t num);
 
     map<uint8_t, Instruction> decoder = 
     {{0x00, {&MOS6502::op_BRK, IMP, "BRK"}},
@@ -404,6 +407,7 @@ public:
     void run(uint16_t steps);
     void step();
 
+    uint8_t get_memory();
     uint8_t get_memory(uint16_t location);
     uint8_t get_A();
     uint8_t get_X();

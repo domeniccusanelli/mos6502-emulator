@@ -117,42 +117,42 @@ uint8_t * MOS6502::operand_from_mode(Mode m)
             break;
 
         case IMM:
-            last_operand = "#$" + to_string(memory[reg_PC]);
+            last_operand = "#$" + to_hex_string(memory[reg_PC]);
             operand = &memory[reg_PC++];
             break;
 
         case ABS:
-            last_operand = "$" + to_string(memory[reg_PC] | memory[reg_PC + 1] << 8);
+            last_operand = "$" + to_hex_string(memory[reg_PC] | memory[reg_PC + 1] << 8);
             addr = (memory[reg_PC++] | memory[reg_PC++] << 8);
             operand = &memory[addr];
             break;
 
         case ZPG:
-            last_operand = "$" + to_string(memory[reg_PC]);
+            last_operand = "$" + to_hex_string(memory[reg_PC]);
             addr = memory[reg_PC++];
             operand = &memory[addr];
             break;
 
         case ZPX:
-            last_operand = "$" + to_string(memory[reg_PC]) + ",X";
+            last_operand = "$" + to_hex_string(memory[reg_PC]) + ",X";
             addr = memory[reg_PC++] + reg_X;
             operand = &memory[addr];
             break;
 
         case ZPY:
-            last_operand = "$" + to_string(memory[reg_PC]) + ",Y";
+            last_operand = "$" + to_hex_string(memory[reg_PC]) + ",Y";
             addr = memory[reg_PC++] + reg_Y;
             operand = &memory[addr];
             break;
 
         case AIX:
-            last_operand = "$" + to_string(memory[reg_PC] | memory[reg_PC + 1] << 8) + ",X";
+            last_operand = "$" + to_hex_string(memory[reg_PC] | memory[reg_PC + 1] << 8) + ",X";
             addr = (memory[reg_PC++] | memory[reg_PC++] << 8) + reg_X;
             operand = &memory[addr];
             break;
 
         case AIY:
-            last_operand = "$" + to_string(memory[reg_PC] | memory[reg_PC + 1] << 8) + ",Y";
+            last_operand = "$" + to_hex_string(memory[reg_PC] | memory[reg_PC + 1] << 8) + ",Y";
             addr = (memory[reg_PC++] | memory[reg_PC++] << 8) + reg_Y;
             operand = &memory[addr];
             break;
@@ -163,26 +163,26 @@ uint8_t * MOS6502::operand_from_mode(Mode m)
             break;
 
         case REL:
-            last_operand = "$" + to_string(memory[reg_PC]);
+            last_operand = "$" + to_hex_string(memory[reg_PC]);
             operand = &memory[reg_PC++];
             break;
 
         case IIX:
-            last_operand = "($" + to_string(memory[reg_PC]) + ",X)";
+            last_operand = "($" + to_hex_string(memory[reg_PC]) + ",X)";
             addr_location = memory[reg_PC++] + reg_X;
             addr = (memory[addr_location] | memory[addr_location + 1] << 8);
             operand = &memory[addr];
             break;
 
         case IIY:
-            last_operand = "($" + to_string(memory[reg_PC]) + "),Y";
+            last_operand = "($" + to_hex_string(memory[reg_PC]) + "),Y";
             addr_location = memory[reg_PC++];
             addr = (memory[addr_location] | memory[addr_location + 1] << 8) + reg_Y;
             operand = &memory[addr];
             break;
 
         case IND:
-            last_operand = "($" + to_string(memory[reg_PC] | memory[reg_PC + 1] << 8) + ")";
+            last_operand = "($" + to_hex_string(memory[reg_PC] | memory[reg_PC + 1] << 8) + ")";
             addr_location = (memory[reg_PC++] | memory[reg_PC++] << 8);
             addr = (memory[addr_location] | memory[addr_location + 1] << 8);
             operand = &memory[addr];
@@ -190,6 +190,18 @@ uint8_t * MOS6502::operand_from_mode(Mode m)
     }
 
     return operand;
+}
+
+string MOS6502::to_hex_string(uint16_t num)
+{
+    stringstream strstr;
+    strstr << hex << num;
+    return strstr.str();
+}
+
+uint8_t MOS6502::get_memory()
+{
+    return memory[reg_PC];
 }
 
 uint8_t MOS6502::get_memory(uint16_t location)
