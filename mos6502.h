@@ -412,7 +412,7 @@ public:
     uint8_t get_A();
     uint8_t get_X();
     uint8_t get_Y();
-    uint8_t get_SP();
+    uint16_t get_SP();
     uint16_t get_PC();
     uint8_t get_status();
     string get_last_instr();
@@ -421,7 +421,7 @@ public:
     void set_A(uint8_t val);
     void set_X(uint8_t val);
     void set_Y(uint8_t val);
-    void set_SP(uint8_t val);
+    void set_SP(uint16_t val);
     void set_PC(uint16_t val);
     void set_status(uint8_t status_byte);
 

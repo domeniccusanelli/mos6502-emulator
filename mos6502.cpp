@@ -224,7 +224,7 @@ uint8_t MOS6502::get_Y()
     return reg_Y;
 }
 
-uint8_t MOS6502::get_SP()
+uint16_t MOS6502::get_SP()
 {
     return reg_SP;
 }
@@ -272,7 +272,7 @@ void MOS6502::set_Y(uint8_t val)
     reg_Y = val;
 }
 
-void MOS6502::set_SP(uint8_t val)
+void MOS6502::set_SP(uint16_t val)
 {
     reg_SP = val;
 }
@@ -686,7 +686,7 @@ void MOS6502::op_RTS(uint8_t *operand)
 void MOS6502::op_SBC(uint8_t *operand)
 {
     uint8_t memory_val = *operand;
-    uint16_t result = reg_A - memory_val - (1 - reg_status.C);
+    uint16_t result = (reg_A - memory_val) - (1 - reg_status.C);
 
     bool operand_test = !((reg_A ^ memory_val) & BYTE_HIGH_BIT);
     bool result_test = ((reg_A ^ result) & BYTE_HIGH_BIT);
