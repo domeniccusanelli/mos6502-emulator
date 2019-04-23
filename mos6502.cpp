@@ -97,6 +97,7 @@ MOS6502::Instruction MOS6502::decode(uint8_t byte)
 
 void MOS6502::execute(Instruction instr)
 {
+    last_instruction = instr.op_name;
     uint8_t * operand = operand_from_mode(instr.addr_mode);
     op_ptr operation = instr.op_func;
     (this->*operation)(operand);
@@ -111,64 +112,77 @@ uint8_t * MOS6502::operand_from_mode(Mode m)
     switch(m)
     {
         case ACC:
+            last_operand = "A";
             operand = &reg_A;
             break;
 
         case IMM:
+            last_operand = "#$" + to_string(memory[reg_PC]);
             operand = &memory[reg_PC++];
             break;
 
         case ABS:
+            last_operand = "$" + to_string(memory[reg_PC] | memory[reg_PC + 1] << 8);
             addr = (memory[reg_PC++] | memory[reg_PC++] << 8);
             operand = &memory[addr];
             break;
 
         case ZPG:
+            last_operand = "$" + to_string(memory[reg_PC]);
             addr = memory[reg_PC++];
             operand = &memory[addr];
             break;
 
         case ZPX:
+            last_operand = "$" + to_string(memory[reg_PC]) + ",X";
             addr = memory[reg_PC++] + reg_X;
             operand = &memory[addr];
             break;
 
         case ZPY:
+            last_operand = "$" + to_string(memory[reg_PC]) + ",Y";
             addr = memory[reg_PC++] + reg_Y;
             operand = &memory[addr];
             break;
 
         case AIX:
+            last_operand = "$" + to_string(memory[reg_PC] | memory[reg_PC + 1] << 8) + ",X";
             addr = (memory[reg_PC++] | memory[reg_PC++] << 8) + reg_X;
             operand = &memory[addr];
             break;
 
         case AIY:
+            last_operand = "$" + to_string(memory[reg_PC] | memory[reg_PC + 1] << 8) + ",Y";
             addr = (memory[reg_PC++] | memory[reg_PC++] << 8) + reg_Y;
             operand = &memory[addr];
             break;
 
         case IMP:
+            last_operand = "";
             operand = &memory[reg_PC]; // unused
             break;
 
         case REL:
+            last_operand = "$" + to_string(memory[reg_PC]);
             operand = &memory[reg_PC++];
             break;
 
         case IIX:
+            last_operand = "($" + to_string(memory[reg_PC]) + ",X)";
             addr_location = memory[reg_PC++] + reg_X;
             addr = (memory[addr_location] | memory[addr_location + 1] << 8);
             operand = &memory[addr];
             break;
 
         case IIY:
+            last_operand = "($" + to_string(memory[reg_PC]) + "),Y";
             addr_location = memory[reg_PC++];
             addr = (memory[addr_location] | memory[addr_location + 1] << 8) + reg_Y;
             operand = &memory[addr];
             break;
 
         case IND:
+            last_operand = "($" + to_string(memory[reg_PC] | memory[reg_PC + 1] << 8) + ")";
             addr_location = (memory[reg_PC++] | memory[reg_PC++] << 8);
             addr = (memory[addr_location] | memory[addr_location + 1] << 8);
             operand = &memory[addr];
@@ -219,6 +233,11 @@ uint8_t MOS6502::get_status()
                            reg_status.Z << 1 |
                            reg_status.C);
     return status_byte;
+}
+
+string MOS6502::get_last_instr()
+{
+    return last_instruction + " " + last_operand;
 }
 
 void MOS6502::set_memory(uint16_t location, uint8_t val)
